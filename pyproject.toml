@@ -17,7 +17,7 @@ keywords = ['solidarity', 'forever']
 python = "^3.8"
 requests = "^2.28"
 Faker = "^10.0.0"
-
+openai = "^0.27"
 
 [tool.poetry.scripts]
 autotail = 'autotail.main:main'

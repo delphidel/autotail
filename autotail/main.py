@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from faker import Faker
 import random
+import openai
 
 
 def main():
@@ -13,7 +14,10 @@ def main():
     email = make_email()
 
     print(email)
-    print(story)
+
+    story = write_story()
+
+    print(story['choices'][0]['message']['content'])
 
     js = edit_template(make_email(), story)
     resp = post_story(js)
@@ -35,6 +39,23 @@ def make_email():
             year = f"{decade}{random.randrange(0, 2)}{random.randrange(0, 10)}"
     sep = random.choice([".", "_", "-"])
     return f"{first}{sep}{last}{year}"
+
+
+def write_story():
+    return openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Please write in first person about a good experience with "
+                    "the Starbucks union, Starbucks Workers United, in which either "
+                    "your rights as an employee or your experience as a customer was "
+                    "improved because the store was unionized."
+                ),
+            }
+        ],
+    )
 
 
 def edit_template(email, story, path=Path(__file__).parent / "constants/template.json"):

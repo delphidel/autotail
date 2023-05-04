@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "autotail"
+version = "0.0.1"
+description = "tell many of the same happy tale about swu"
+authors = ["delphidel"]
+license = "unlicense"
+paackages = [
+    { include = "autotail" }
+]
+readme = "README.md"
+homepage = "https://github.com/delphidel/autotail"
+repository = "https://github.com/delphidel/autotail"
+keywords = ['solidarity', 'forever']
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.28"
+
+[tool.poetry.scripts]
+autotail = 'autotail.main:main'
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

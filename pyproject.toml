@@ -1,12 +1,13 @@
 [tool.poetry]
 name = "autotail"
 version = "0.0.1"
-description = "tell many of the same happy tale about swu"
+description = "tell many of happy tales about swu"
 authors = ["delphidel"]
 license = "unlicense"
-paackages = [
+packages = [
     { include = "autotail" }
 ]
+include = ['autotail/constants/template.json']
 readme = "README.md"
 homepage = "https://github.com/delphidel/autotail"
 repository = "https://github.com/delphidel/autotail"

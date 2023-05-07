@@ -12,15 +12,15 @@ from abc import ABC, abstractmethod
 
 
 class PostBot(ABC):
-    def __init__(self,
-                 url: str,
-                 locator_dict: dict,
-                 email: str,
-                 story: str,
-                 headless: bool = True):
+    def __init__(
+        self,
+        url: str,
+        locator_dict: dict,
+        email: str,
+        story: str,
+        headless: bool = True,
+    ):
         self._tracebacks = True
-
-        logging.info(f"creating postbot with url: {url}, email: {email}, story: {story}")
 
         if url is None:
             raise PostBotError("url is None")
@@ -41,17 +41,20 @@ class PostBot(ABC):
 
         self.options = Options()
 
-        self.options.add_argument("--disable-dev-shm-usage") #// overcome limited resource problems
+        self.options.add_argument(
+            "--disable-dev-shm-usage"
+        )  # // overcome limited resource problems
 
         if headless:
             self.options.add_argument("--headless")
 
         # vary window size slightly to avoid obvious fingerprinting
-        width, height = random.randint(1800,1920), random.randint(900, 1080)
+        width, height = random.randint(1800, 1920), random.randint(900, 1080)
         self.options.add_argument(f"--window-size={width},{height}")
 
-        self.browser = webdriver.Chrome(ChromeDriverManager().install(),
-                                        options = self.options)
+        self.browser = webdriver.Chrome(
+            ChromeDriverManager().install(), options=self.options
+        )
         self.timeout = 5
 
         logging.info("Created webdriver, loading page...")
@@ -67,18 +70,14 @@ class PostBot(ABC):
     @abstractmethod
     def post_story(self):
         """Abstract method to do the work"""
-        
-    def random_sleep(self, min=0.25, max=1):
-        time.sleep(random.random()*(max-min)+min)
 
-    def sleep_until_clickable(self, element:str, timeout:int=10):
+    def random_sleep(self, min=0.25, max=1.0):
+        time.sleep(random.random() * (max - min) + min)
+
+    def sleep_until_clickable(self, element: str, timeout: int = 10):
         """Note, use the string name of the slement rather than the located self.element"""
-        WebDriverWait(
-            self.browser, timeout
-        ).until(
-            EC.element_to_be_clickable(
-                self.locator_dictionary[element]
-            )
+        WebDriverWait(self.browser, timeout).until(
+            EC.element_to_be_clickable(self.locator_dictionary[element])
         )
 
     def quit(self, leaveopen=False):
@@ -97,7 +96,7 @@ class PostBot(ABC):
                     element = WebDriverWait(self.browser, self.timeout).until(
                         EC.presence_of_element_located(locator)
                     )
-                except(TimeoutException, StaleElementReferenceException):
+                except (TimeoutException, StaleElementReferenceException):
                     if self._tracebacks:
                         traceback.print_exc()
 
@@ -105,7 +104,7 @@ class PostBot(ABC):
                     element = WebDriverWait(self.browser, self.timeout).until(
                         EC.visibility_of_element_located(locator)
                     )
-                except(TimeoutException, StaleElementReferenceException):
+                except (TimeoutException, StaleElementReferenceException):
                     if self._tracebacks:
                         traceback.print_exc()
                 # I could have returned element, however because of lazy loading, I am seeking the element before return

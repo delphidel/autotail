@@ -1,69 +1,61 @@
+import argparse
 import logging
-from faker import Faker
-import random
-import openai
 from autotail.workersunitedlies import WorkersUnitedLiesDeployment
+import traceback
 import sys
 import time
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+parser = argparse.ArgumentParser(
+    "TELL MANY OF THE SAME STORY", epilog="IF THEY WANT STORIES, WE'LL GIVE EM STORIES"
+)
+parser.add_argument("-n", type=int, default=1, help="Apply for n jobs (default: 1)")
+parser.add_argument("--relentless", action="store_true", help="Keep applying forever")
+parser.add_argument(
+    "--noheadless",
+    action="store_false",
+    help="Show the chromium driver as it fills in the application",
+)
+parser.add_argument(
+    "--leaveopen",
+    action="store_true",
+    help="Try to leave the browser open after an application is completed",
+)
+
+
 def main():
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    story = (
-        'Fuck off, scabs. I hope almost every "story" you get '
-        "is from a Workers United ally."
-    )
-    email = make_email()
-
-    logging.info(f"email: {email}")
-
-    # story = write_story()
-
-    logging.info(f"story: {story}")
+    args = parser.parse_args()
+    headless = args.noheadless  # flipped bool b/c store_false above
 
     deployment = WorkersUnitedLiesDeployment
 
-    bot = deployment.make(headless=False, email=email, story=story)
-    bot.post_story()
-    bot.quit()
-
-    logging.info("Success!")
-
-    # js = edit_template(make_email(), story)
-    # resp = post_story(js)
-
-    # logging.info(f"resp code: {resp}")
-    # logging.info(f"resp body: {resp.text}")
-
-
-def make_email():
-    faker = Faker()
-    (first, last) = (faker.first_name(), faker.last_name())
-    if random.randrange(0, 2) == 0:
-        year = f"{random.randrange(0, 10)}{random.randrange(0, 10)}"
+    if args.relentless:
+        while True:
+            bot = deployment.make(headless=headless)
+            bot.post_story()
+            if not headless:
+                bot.quit(args.leaveopen)
+            logging.info("Success!")
     else:
-        decade = random.choice(["19", "20"])
-        if decade == "19":
-            year = f"{decade}{random.randrange(0, 10)}{random.randrange(0, 10)}"
-        else:
-            year = f"{decade}{random.randrange(0, 2)}{random.randrange(0, 10)}"
-    sep = random.choice([".", "_", "-"])
-    return f"{first}{sep}{last}{year}@gmail.com"
-
-
-def write_story():
-    resp = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "Please write in first person about a good experience with "
-                    "the Starbucks union, Starbucks Workers United, in which either "
-                    "your rights as an employee or your experience as a customer was "
-                    "improved because the store was unionized."
-                ),
-            }
-        ],
-    )
-
-    return resp['choices'][0]['message']['content']
+        for i in range(args.n):
+            try:
+                print(
+                    "-" * 50 + f"\n    submitting story #{i+1}/{args.n}\n" + "-" * 50,
+                    flush=True,
+                )
+                bot = deployment.make(headless=headless)
+                bot.post_story()
+                if not headless:
+                    time.sleep(5)  # leaveopen isn't working
+                bot.quit(args.leaveopen)
+                logging.info("Success!")
+            except Exception as e:
+                logging.error(f"Error! {e}")
+                traceback.print_exc()
+                print(
+                    "-" * 50
+                    + f"\n    failed submission for #{i+1}/{args.n}! Trying next\n"
+                    + "-" * 50,
+                    flush=True,
+                )

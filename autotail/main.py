@@ -1,29 +1,38 @@
-import requests
-import json
-from pathlib import Path
+import logging
 from faker import Faker
 import random
 import openai
-
+from autotail.workersunitedlies import WorkersUnitedLiesDeployment
+import sys
+import time
 
 def main():
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     story = (
         'Fuck off, scabs. I hope almost every "story" you get '
         "is from a Workers United ally."
     )
     email = make_email()
 
-    print(email)
+    logging.info(f"email: {email}")
 
-    story = write_story()
+    # story = write_story()
 
-    print(story['choices'][0]['message']['content'])
+    logging.info(f"story: {story}")
 
-    js = edit_template(make_email(), story)
-    resp = post_story(js)
+    deployment = WorkersUnitedLiesDeployment
 
-    print(resp)
-    print(resp.text)
+    bot = deployment.make(headless=False, email=email, story=story)
+    bot.post_story()
+    bot.quit()
+
+    logging.info("Success!")
+
+    # js = edit_template(make_email(), story)
+    # resp = post_story(js)
+
+    # logging.info(f"resp code: {resp}")
+    # logging.info(f"resp body: {resp.text}")
 
 
 def make_email():
@@ -38,11 +47,11 @@ def make_email():
         else:
             year = f"{decade}{random.randrange(0, 2)}{random.randrange(0, 10)}"
     sep = random.choice([".", "_", "-"])
-    return f"{first}{sep}{last}{year}"
+    return f"{first}{sep}{last}{year}@gmail.com"
 
 
 def write_story():
-    return openai.ChatCompletion.create(
+    resp = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
             {
@@ -57,14 +66,4 @@ def write_story():
         ],
     )
 
-
-def edit_template(email, story, path=Path(__file__).parent / "constants/template.json"):
-    with open(path) as f:
-        js = json.load(f)
-        js["fields"]["3"]["value"] = story
-        js["fields"]["10"]["value"] = email
-        return js
-
-
-def post_story(js, url="https://workersunitedfacts.com/wp/wp-admin/admin-ajax.php"):
-    return requests.post(url, json=js)
+    return resp['choices'][0]['message']['content']

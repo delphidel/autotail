@@ -79,7 +79,7 @@ class Deployment:
                 {
                     "role": "system",
                     "content": (
-                        "Please tell me a story in first person about an experience with "
+                        "Please tell me a very short story in first person about an experience with "
                         "the Starbucks union, Starbucks Workers United, in which either "
                         "one's rights as an employee or one's experience as a customer was "
                         "improved because the store was unionized."

@@ -55,6 +55,10 @@ class PostBot(ABC):
         self.browser = webdriver.Chrome(
             ChromeDriverManager().install(), options=self.options
         )
+        self.random_sleep()
+        self.browser.refresh()
+        self.random_sleep()
+        self.browser.get(self.browser.current_url)
         self.timeout = 5
 
         logging.info("Created webdriver, loading page...")

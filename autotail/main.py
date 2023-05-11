@@ -76,10 +76,10 @@ def main():
                     fi.write(bot.get_story())
                 bot.post_story()
                 # todo: shouldn't be conditional, but need for debug
+                logging.info("Success! At clicking the button, at least...")
                 if headless:
                     bot.quit(args.leaveopen)
-                logging.info("Success! At clicking the button, at least...")
-                if args.debug:
+                elif args.debug:
                     logging.info("Staying open for debugging")
                     time.sleep(300)  # five minutes
             except RecaptchaError:

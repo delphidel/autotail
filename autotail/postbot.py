@@ -10,6 +10,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver import ActionChains
 from webdriver_manager.chrome import ChromeDriverManager
 from abc import ABC, abstractmethod
+import traceback
 
 
 class PostBot(ABC):
@@ -80,6 +81,10 @@ class PostBot(ABC):
         time.sleep(random.random() * (max - min) + min)
 
     def random_mouse_jitter(self, target, minpx=10, maxpx=200):
+        # dict of X, Y coordinates
+        coords = target.location_once_scrolled_into_view
+        self.browser.execute_script(f"window.scrollTo({coords['x']}, {coords['y']});")
+
         ActionChains(self.browser).move_to_element_with_offset(
             target, random.randint(minpx, maxpx), random.randint(minpx, maxpx)
         ).move_to_element_with_offset(
@@ -87,7 +92,6 @@ class PostBot(ABC):
         ).move_to_element_with_offset(
             target, random.randint(minpx, maxpx), random.randint(minpx, maxpx)
         ).perform()
-        self.random_sleep()
         ActionChains(self.browser).move_to_element(target).perform()
 
     def sleep_until_clickable(self, element: str, timeout: int = 10):
@@ -109,15 +113,7 @@ class PostBot(ABC):
             locator = self.locator_dictionary.get(what, False)
             if locator:
                 try:
-                    element = WebDriverWait(self.browser, self.timeout).until(
-                        EC.presence_of_element_located(locator)
-                    )
-                except (TimeoutException, StaleElementReferenceException):
-                    if self._tracebacks:
-                        traceback.print_exc()
-
-                try:
-                    element = WebDriverWait(self.browser, self.timeout).until(
+                    WebDriverWait(self.browser, self.timeout).until(
                         EC.visibility_of_element_located(locator)
                     )
                 except (TimeoutException, StaleElementReferenceException):

@@ -34,7 +34,7 @@ class Deployment:
         passing **kwargs onto the PostBot
         """
         url = random.choice(self.urls)
-        logging.info(f"Using position url: {url}")
+        logging.info(f"Url: {url}")
         self.email = self.make_email()
         logging.info(f"Generated email: {self.email}")
         self.story = self.write_story()

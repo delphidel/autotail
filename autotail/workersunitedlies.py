@@ -19,15 +19,27 @@ class WorkersUnitedLiesPostbot(PostBot):
         self.story_field.send_keys(self.story)
         self.random_sleep(0.25, 2)
 
-        # only field guaranteed to be in bounds
-        self.random_mouse_jitter(self.story_field)
+        # More Jitter!!
+        for i in range(1, 10):
+            self.random_mouse_jitter(self.story_field)
+            self.random_sleep(0.25, 0.5)
+
+        self.random_mouse_jitter(self.email_field)
         self.email_field.click()
         self.email_field.send_keys(self.email)
         self.random_sleep(0.25, 2)
 
-        # only field guaranteed to be in bounds
-        self.random_mouse_jitter(self.story_field)
+        self.random_mouse_jitter(self.submit_button)
         self.submit_button.click()
+        self.random_sleep(1, 2)
+
+        try:
+            if self.error_msg != "":
+                logging.error("Bad news! Got recaptcha'd.")
+                logging.error(self.error_msg.text)
+                raise RecaptchaError(self.error_msg.text)
+        except AttributeError:
+            logging.info("Looks like no error is present!")
 
     def get_story(self):
         return self.story.replace("\n", "\\n") + "\n"
@@ -39,3 +51,7 @@ WorkersUnitedLiesDeployment = Deployment(
     locators=dict(WorkersUnitedLiesLocator.__dict__),
     postbot=WorkersUnitedLiesPostbot,
 )
+
+
+class RecaptchaError(Exception):
+    """Exception for recaptcha"""

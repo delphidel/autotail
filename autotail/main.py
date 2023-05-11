@@ -1,6 +1,6 @@
 import argparse
 import logging
-from autotail.workersunitedlies import WorkersUnitedLiesDeployment
+from autotail.workersunitedlies import WorkersUnitedLiesDeployment, RecaptchaError
 import traceback
 import sys
 import time
@@ -30,6 +30,11 @@ parser.add_argument(
 parser.add_argument(
     "-f", type=str, default="stories.csv", help="Output file for stories (default: 1)"
 )
+parser.add_argument(
+    "--debug",
+    action="store_true",
+    help="Leave the browsers open after last run for debugging purposes",
+)
 
 
 def main():
@@ -50,10 +55,15 @@ def main():
             bot = deployment.make(headless=headless)
             with open(args.f, "a") as fi:
                 fi.write(bot.get_story())
-            bot.post_story()
-            if headless:
-                bot.quit(args.leaveopen)
-            logging.info("Success!")
+            try:
+                bot.post_story()
+                if headless:
+                    bot.quit(args.leaveopen)
+                logging.info("Success!")
+            except RecaptchaError:
+                logging.error("Got recaptcha'd!")
+
+            # todo: shouldn't be conditional, but need for debug
     else:
         for i in range(args.n):
             try:
@@ -65,9 +75,20 @@ def main():
                 with open(args.f, "a") as fi:
                     fi.write(bot.get_story())
                 bot.post_story()
+                # todo: shouldn't be conditional, but need for debug
                 if headless:
                     bot.quit(args.leaveopen)
-                logging.info("Success!")
+                logging.info("Success! At clicking the button, at least...")
+                if args.debug:
+                    logging.info("Staying open for debugging")
+                    time.sleep(300)  # five minutes
+            except RecaptchaError:
+                print(
+                    "-" * 50
+                    + f"\n    failed submission for #{i+1}/{args.n}! Trying next\n"
+                    + "-" * 50,
+                    flush=True,
+                )
             except Exception as e:
                 logging.error(f"Error! {e}")
                 traceback.print_exc()

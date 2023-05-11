@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver import ActionChains
 from webdriver_manager.chrome import ChromeDriverManager
 from abc import ABC, abstractmethod
 
@@ -77,6 +78,17 @@ class PostBot(ABC):
 
     def random_sleep(self, min=0.25, max=1.0):
         time.sleep(random.random() * (max - min) + min)
+
+    def random_mouse_jitter(self, target, minpx=10, maxpx=200):
+        ActionChains(self.browser).move_to_element_with_offset(
+            target, random.randint(minpx, maxpx), random.randint(minpx, maxpx)
+        ).move_to_element_with_offset(
+            target, random.randint(minpx, maxpx), random.randint(minpx, maxpx)
+        ).move_to_element_with_offset(
+            target, random.randint(minpx, maxpx), random.randint(minpx, maxpx)
+        ).perform()
+        self.random_sleep()
+        ActionChains(self.browser).move_to_element(target).perform()
 
     def sleep_until_clickable(self, element: str, timeout: int = 10):
         """Note, use the string name of the slement rather than the located self.element"""

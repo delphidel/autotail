@@ -22,6 +22,14 @@ parser.add_argument(
     action="store_true",
     help="Try to leave the browser open after an application is completed",
 )
+parser.add_argument(
+    "--juststories",
+    action="store_true",
+    help="Just print n ChatGPT stories to the console",
+)
+parser.add_argument(
+    "-f", type=str, default="stories.csv", help="Output file for stories (default: 1)"
+)
 
 
 def main():
@@ -30,11 +38,20 @@ def main():
 
     deployment = WorkersUnitedLiesDeployment
 
+    if args.juststories:
+        for i in range(args.n):
+            bot = deployment.make(headless=headless)
+            with open(args.f, "a") as fi:
+                fi.write(bot.get_story())
+        return
+
     if args.relentless:
         while True:
             bot = deployment.make(headless=headless)
+            with open(args.f, "a") as fi:
+                fi.write(bot.get_story())
             bot.post_story()
-            if not headless:
+            if headless:
                 bot.quit(args.leaveopen)
             logging.info("Success!")
     else:
@@ -45,10 +62,11 @@ def main():
                     flush=True,
                 )
                 bot = deployment.make(headless=headless)
+                with open(args.f, "a") as fi:
+                    fi.write(bot.get_story())
                 bot.post_story()
-                if not headless:
-                    time.sleep(5)  # leaveopen isn't working
-                bot.quit(args.leaveopen)
+                if headless:
+                    bot.quit(args.leaveopen)
                 logging.info("Success!")
             except Exception as e:
                 logging.error(f"Error! {e}")

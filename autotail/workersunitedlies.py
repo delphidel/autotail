@@ -30,6 +30,7 @@ class WorkersUnitedLiesPostbot(PostBot):
         self.random_sleep(0.25, 2)
 
         self.random_mouse_jitter(self.submit_button)
+        logging.info("Clicking submit...")
         self.submit_button.click()
         self.random_sleep(1, 2)
 

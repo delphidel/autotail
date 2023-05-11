@@ -12,6 +12,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from abc import ABC, abstractmethod
 import traceback
 
+import numpy as np
+import scipy.interpolate as interp
 
 class PostBot(ABC):
     def __init__(
@@ -85,14 +87,48 @@ class PostBot(ABC):
         coords = target.location_once_scrolled_into_view
         self.browser.execute_script(f"window.scrollTo({coords['x']}, {coords['y']});")
 
-        ActionChains(self.browser).move_to_element_with_offset(
-            target, random.randint(minpx, maxpx), random.randint(minpx, maxpx)
-        ).move_to_element_with_offset(
-            target, random.randint(minpx, maxpx), random.randint(minpx, maxpx)
-        ).move_to_element_with_offset(
-            target, random.randint(minpx, maxpx), random.randint(minpx, maxpx)
-        ).perform()
+        xs, ys = self._make_spline()
+
+        logging.info(f"Doing mouse movement with spline length: {len(xs)}")
+        x0, y0 = (random.randint(10, 100), random.randint(10, 100))
+        logging.debug(f"Moving to {x0}, {y0}")
+        ActionChains(self.browser).move_to_element_with_offset(target, x0, y0
+        )
+        for x, y in zip(xs, ys):
+            ActionChains(self.browser).move_by_offset(x, y).perform()
+            logging.info(f"Moving by {x}, {y}")
+        self.random_sleep()
         ActionChains(self.browser).move_to_element(target).perform()
+
+    # stolen from https://stackoverflow.com/a/48690652
+    def _make_spline(self):
+        length = 50
+        # Curve base:
+        points = [[0, 0], [0, 2], [2, 3], [4, 0], [6, 3], [8, 2], [8, 0]]
+        # points = [[0, 0], [0, 2], [8, 2], [8, 0]]        
+        points = np.array(points)
+
+        x = points[:, 0]
+        y = points[:, 1]
+
+        t = range(len(points))
+        ipl_t = np.linspace(0.0, len(points) - 1, length)
+
+        x_tup = interp.splrep(t, x, k=3)
+        y_tup = interp.splrep(t, y, k=3)
+
+        x_list = list(x_tup)
+        xl = x.tolist()
+        x_list[1] = xl + [0.0, 0.0, 0.0, 0.0]
+
+        y_list = list(y_tup)
+        yl = y.tolist()
+        y_list[1] = yl + [0.0, 0.0, 0.0, 0.0]
+
+        x_i = interp.splev(ipl_t, x_list)
+        y_i = interp.splev(ipl_t, y_list)
+
+        return (x_i, y_i)
 
     def sleep_until_clickable(self, element: str, timeout: int = 10):
         """Note, use the string name of the slement rather than the located self.element"""

@@ -20,7 +20,8 @@ Faker = "^10.0.0"
 openai = "^0.27"
 selenium = "^3"
 webdriver-manager = "^3.5.2"
-
+numpy = "^1.24"
+scipy = "^1.10.0"
 
 [tool.poetry.scripts]
 autotail = 'autotail.main:main'

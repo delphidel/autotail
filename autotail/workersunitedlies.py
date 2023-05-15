@@ -19,11 +19,6 @@ class WorkersUnitedLiesPostbot(PostBot):
         self.story_field.send_keys(self.story)
         self.random_sleep(0.25, 2)
 
-        # More Jitter!!
-        for i in range(1, 10):
-            self.random_mouse_jitter(self.story_field)
-            self.random_sleep(0.25, 0.5)
-
         self.random_mouse_jitter(self.email_field)
         self.email_field.click()
         self.email_field.send_keys(self.email)

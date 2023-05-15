@@ -15,6 +15,7 @@ import traceback
 import numpy as np
 import scipy.interpolate as interp
 
+
 class PostBot(ABC):
     def __init__(
         self,
@@ -92,11 +93,10 @@ class PostBot(ABC):
         logging.info(f"Doing mouse movement with spline length: {len(xs)}")
         x0, y0 = (random.randint(10, 100), random.randint(10, 100))
         logging.debug(f"Moving to {x0}, {y0}")
-        ActionChains(self.browser).move_to_element_with_offset(target, x0, y0
-        )
+        ActionChains(self.browser).move_to_element_with_offset(target, x0, y0)
         for x, y in zip(xs, ys):
             ActionChains(self.browser).move_by_offset(x, y).perform()
-            logging.info(f"Moving by {x}, {y}")
+            logging.debug(f"Moving by {x}, {y}")
         self.random_sleep()
         ActionChains(self.browser).move_to_element(target).perform()
 
@@ -105,7 +105,7 @@ class PostBot(ABC):
         length = 50
         # Curve base:
         points = [[0, 0], [0, 2], [2, 3], [4, 0], [6, 3], [8, 2], [8, 0]]
-        # points = [[0, 0], [0, 2], [8, 2], [8, 0]]        
+        # points = [[0, 0], [0, 2], [8, 2], [8, 0]]
         points = np.array(points)
 
         x = points[:, 0]
